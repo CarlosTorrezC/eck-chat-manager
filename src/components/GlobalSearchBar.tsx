@@ -144,7 +144,7 @@ const GlobalSearchBar = (props: {
                     disabled={count() === 0}
                     onClick={() => jumpToTab(tab.id)}
                   >
-                    <span class="truncate">{tab.config.name}</span>
+                    <span class="truncate">{tab.name}</span>
                     <span
                       class={
                         count() > 0

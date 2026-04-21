@@ -123,7 +123,21 @@ const TabComponent: Component<TabComponentProps> = (props) => {
           {messageCount() > 99 ? "99+" : messageCount()}
         </div>
       )}
-      <span>{props.tab.name}</span>
+      <span
+        title={props.tab.note ? props.tab.note : undefined}
+        class="flex items-center gap-1"
+      >
+        {props.tab.name}
+        {props.tab.tags && props.tab.tags.length > 0 && (
+          <span class="flex gap-0.5">
+            {props.tab.tags.slice(0, 3).map((tag) => (
+              <span class="bg-emerald-700/70 text-white text-[0.6rem] leading-none px-1 py-0.5 rounded">
+                {tag}
+              </span>
+            ))}
+          </span>
+        )}
+      </span>
       <button
         class="flex items-center justify-center ml-0.5 w-6 h-6 hover:bg-zinc-800/50 rounded group-data-[selected]:hover:bg-zinc-800/50"
         onClick={() => {

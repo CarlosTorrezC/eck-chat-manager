@@ -91,6 +91,52 @@ const TabEditDialog: Component<{
                 spellcheck={false}
               />
             </TextField.Root>
+            <TextField.Root
+              class="flex flex-col gap-1.5 py-2"
+              defaultValue={(props.tabToEdit().tags ?? []).join(", ")}
+              onChange={(value) => {
+                const tags = value
+                  .split(",")
+                  .map((t) => t.trim())
+                  .filter(Boolean);
+                updateAndSyncTabStore(
+                  "tabs",
+                  (t) => t.id === props.tabToEdit().id,
+                  "tags",
+                  tags
+                );
+              }}
+            >
+              <TextField.Label class="text-[0.95rem] leading-none">
+                {t("Tags")}
+              </TextField.Label>
+              <TextField.Input
+                class="text-sm py-1.5 px-2.5 bg-zinc-700/50 border rounded border-zinc-600 outline-none focus:border-zinc-300"
+                placeholder={t("tagsPlaceholder")}
+                spellcheck={false}
+              />
+            </TextField.Root>
+            <TextField.Root
+              class="flex flex-col gap-1.5 py-2"
+              defaultValue={props.tabToEdit().note ?? ""}
+              onChange={(value) => {
+                updateAndSyncTabStore(
+                  "tabs",
+                  (t) => t.id === props.tabToEdit().id,
+                  "note",
+                  value
+                );
+              }}
+            >
+              <TextField.Label class="text-[0.95rem] leading-none">
+                {t("Internal note")}
+              </TextField.Label>
+              <TextField.TextArea
+                class="text-sm py-1.5 px-2.5 bg-zinc-700/50 border rounded border-zinc-600 outline-none focus:border-zinc-300 min-h-[4rem] resize-y"
+                placeholder={t("notePlaceholder")}
+                spellcheck={false}
+              />
+            </TextField.Root>
             <StyledSelect
               multiple={false}
               options={availableThemes()}

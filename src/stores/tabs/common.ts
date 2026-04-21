@@ -4,6 +4,8 @@ export type Tab = {
   id: string;
   name: string;
   messageCount?: number;
+  tags?: string[];
+  note?: string;
   config: {
     theme: string;
     media: boolean;
@@ -24,6 +26,8 @@ export const getDefaultTab = (): Tab => ({
   id: nanoid(),
   name: "New Tab",
   messageCount: 0,
+  tags: [],
+  note: "",
   config: {
     theme: "dark",
     notifications: true,

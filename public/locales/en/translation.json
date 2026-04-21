@@ -103,5 +103,9 @@
   "Exit": "Exit",
   "Cancel": "Cancel",
   "Are you sure you want to exit?": "Are you sure you want to exit?",
-  "Pick color": "Pick color"
+  "Pick color": "Pick color",
+  "Tags": "Tags",
+  "Internal note": "Internal note",
+  "tagsPlaceholder": "e.g. VIP, wholesale, follow-up",
+  "notePlaceholder": "Notes visible only to the admin…"
 }

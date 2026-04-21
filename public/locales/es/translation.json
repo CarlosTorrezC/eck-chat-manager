@@ -40,5 +40,9 @@
   "Report Bugs/Issues": "Reportar bugs/problemas",
   "Website": "Página web",
   "Repository": "Repositorio",
-  "Open &DevTools": "Abrir herramientas de desarrollador"
+  "Open &DevTools": "Abrir herramientas de desarrollador",
+  "Tags": "Etiquetas",
+  "Internal note": "Nota interna",
+  "tagsPlaceholder": "ej. VIP, mayorista, seguimiento",
+  "notePlaceholder": "Notas visibles solo para el admin…"
 }
