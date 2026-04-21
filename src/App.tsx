@@ -16,11 +16,14 @@ import CustomTitlebar from "./components/CustomTitlebar";
 import { I18NProvider } from "./i18n/solid";
 import ThemeManagerDialog from "./components/ThemeManagerDialog";
 import GlobalSearchBar from "./components/GlobalSearchBar";
+import AdminDashboard from "./components/AdminDashboard";
+import "./stores/messageCounts";
 
 const App: Component = () => {
   const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
   const [isThemeManagerOpen, setIsThemeManagerOpen] = createSignal(false);
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = createSignal(false);
+  const [isDashboardOpen, setIsDashboardOpen] = createSignal(false);
   const [menu, { refetch: refetchAppMenu }] = createResource(window.getAppMenu);
 
   const handlers = new Set<() => void>();
@@ -32,17 +35,27 @@ const App: Component = () => {
 
   onMount(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      const isFindAcrossTabs =
-        (event.ctrlKey || event.metaKey) &&
-        event.shiftKey &&
-        event.key.toLowerCase() === "f";
-      if (isFindAcrossTabs) {
+      const mod = event.ctrlKey || event.metaKey;
+      if (!mod || !event.shiftKey) return;
+      const key = event.key.toLowerCase();
+      if (key === "f") {
         event.preventDefault();
         setIsGlobalSearchOpen((prev) => !prev);
+      } else if (key === "d") {
+        event.preventDefault();
+        setIsDashboardOpen((prev) => !prev);
+      }
+    };
+    const onKeyDownEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        if (isDashboardOpen()) setIsDashboardOpen(false);
+        if (isGlobalSearchOpen()) setIsGlobalSearchOpen(false);
       }
     };
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", onKeyDownEscape);
     handlers.add(() => window.removeEventListener("keydown", onKeyDown));
+    handlers.add(() => window.removeEventListener("keydown", onKeyDownEscape));
   });
   handlers.add(
     window.electronIPCHandlers.onOpenSettings(() => {
@@ -96,6 +109,10 @@ const App: Component = () => {
         <GlobalSearchBar
           isOpen={isGlobalSearchOpen}
           close={() => setIsGlobalSearchOpen(false)}
+        />
+        <AdminDashboard
+          isOpen={isDashboardOpen}
+          close={() => setIsDashboardOpen(false)}
         />
       </div>
     </I18NProvider>
