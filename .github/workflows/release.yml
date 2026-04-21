@@ -1,0 +1,29 @@
+name: Release Windows
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "yarn"
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build and publish to releases repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: yarn run publish --platform=win32
