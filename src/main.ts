@@ -132,7 +132,7 @@ function createWindow() {
       preload: path.join(__dirname, "preload.js"),
       webviewTag: true,
     },
-    title: `Altus ${app.getVersion()}`,
+    title: `ECK Chat Manager ${app.getVersion()}`,
     show: false,
     frame: !useCustomTitlebar,
     titleBarStyle: useCustomTitlebar ? "hidden" : "default",
@@ -208,7 +208,7 @@ if (!singleInstanceLock) {
   app.on("ready", () => {
     const userAgentFallback = app.userAgentFallback;
     app.userAgentFallback = userAgentFallback.replace(
-      /(Altus|Electron)([^\s]+\s)/g,
+      /(ECK Chat Manager|Altus|Electron)\/[^\s]+\s/g,
       ""
     );
 
@@ -224,7 +224,7 @@ if (!singleInstanceLock) {
     );
 
     const autoLauncher = new AutoLaunch({
-      name: "Altus",
+      name: "ECK Chat Manager",
     });
 
     if (getSettingWithDefault("autoLaunch")) {
@@ -396,7 +396,7 @@ function toggleTray(mainWindow: BrowserWindow, enabled: boolean) {
         })
       : trayIcon
   );
-  tray.setToolTip("Altus");
+  tray.setToolTip("ECK Chat Manager");
   tray.setContextMenu(getLocalizedTrayMenu());
   tray.on("click", () => {
     if (process.platform !== "darwin") {
@@ -654,7 +654,7 @@ async function initializeI18N(mainWindow: BrowserWindow) {
   }
 }
 
-const versionInfo = `Altus: ${app.getVersion()}
+const versionInfo = `ECK Chat Manager: ${app.getVersion()}
 Electron: ${process.versions.electron}
 Chrome: ${process.versions.chrome}
 V8: ${process.versions.v8}
@@ -880,8 +880,8 @@ function getLocalizedMainMenu() {
             dialog
               .showMessageBox({
                 type: "info",
-                title: `Altus v${app.getVersion()}`,
-                message: `Made by Aman Harwara.`,
+                title: `ECK Chat Manager v${app.getVersion()}`,
+                message: `ECK Moda — Gestor multi-cuenta WhatsApp. Basado en Altus (Aman Harwara, GPL-3.0).`,
                 detail: aboutDialogText,
                 icon: mainIcon,
                 buttons: ["Copy Version Info", "OK"],
@@ -930,22 +930,17 @@ function getLocalizedMainMenu() {
               label: electronI18N.t("Report Bugs/Issues"),
               click: () => {
                 shell.openExternal(
-                  "https://gitlab.com/amanharwara/altus/-/issues"
+                  "https://github.com/CarlosTorrezC/eck-chat-manager/issues"
                 );
               },
               id: "report-bugs-issues",
             },
             {
-              label: electronI18N.t("Website"),
-              click: () => {
-                shell.openExternal("https://amanharwara.com");
-              },
-              id: "website",
-            },
-            {
               label: electronI18N.t("Repository"),
               click: () => {
-                shell.openExternal("https://www.github.com/amanharwara/altus");
+                shell.openExternal(
+                  "https://github.com/CarlosTorrezC/eck-chat-manager"
+                );
               },
               id: "repository",
             },
