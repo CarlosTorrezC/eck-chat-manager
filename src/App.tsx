@@ -4,6 +4,7 @@ import {
   createSignal,
   createResource,
   onCleanup,
+  onMount,
 } from "solid-js";
 import { stableTabArray, tabStore } from "./stores/tabs/solid";
 import WebView from "./components/WebView";
@@ -14,10 +15,12 @@ import { getSettingValue } from "./stores/settings/solid";
 import CustomTitlebar from "./components/CustomTitlebar";
 import { I18NProvider } from "./i18n/solid";
 import ThemeManagerDialog from "./components/ThemeManagerDialog";
+import GlobalSearchBar from "./components/GlobalSearchBar";
 
 const App: Component = () => {
   const [isSettingsOpen, setIsSettingsOpen] = createSignal(false);
   const [isThemeManagerOpen, setIsThemeManagerOpen] = createSignal(false);
+  const [isGlobalSearchOpen, setIsGlobalSearchOpen] = createSignal(false);
   const [menu, { refetch: refetchAppMenu }] = createResource(window.getAppMenu);
 
   const handlers = new Set<() => void>();
@@ -25,6 +28,21 @@ const App: Component = () => {
     for (const cleanup of handlers) {
       cleanup();
     }
+  });
+
+  onMount(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const isFindAcrossTabs =
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "f";
+      if (isFindAcrossTabs) {
+        event.preventDefault();
+        setIsGlobalSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    handlers.add(() => window.removeEventListener("keydown", onKeyDown));
   });
   handlers.add(
     window.electronIPCHandlers.onOpenSettings(() => {
@@ -74,6 +92,10 @@ const App: Component = () => {
         <ThemeManagerDialog
           isOpen={isThemeManagerOpen}
           setIsOpen={setIsThemeManagerOpen}
+        />
+        <GlobalSearchBar
+          isOpen={isGlobalSearchOpen}
+          close={() => setIsGlobalSearchOpen(false)}
         />
       </div>
     </I18NProvider>
