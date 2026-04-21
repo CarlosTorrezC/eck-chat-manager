@@ -1,8 +1,8 @@
 import { Configuration } from "app-builder-lib";
 
 export const CommonConfig: Partial<Configuration> = {
-  appId: "harwara.aman.altus",
-  productName: "Altus",
+  appId: "bo.eckmoda.chatmanager",
+  productName: "ECK Chat Manager",
   protocols: [
     {
       name: "whatsapp",
