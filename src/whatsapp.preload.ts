@@ -4,6 +4,12 @@ import { formatSelectedText } from "./utils/webview/formatSelectedText";
 import { getLuminance } from "color2k";
 
 let titleElement: HTMLTitleElement;
+let titleObserver: MutationObserver | undefined;
+
+window.addEventListener("beforeunload", () => {
+  titleObserver?.disconnect();
+  titleObserver = undefined;
+});
 
 window.onload = () => {
   titleElement = document.querySelector("title") as HTMLTitleElement;
@@ -49,7 +55,6 @@ window.onload = () => {
 
   document.body.addEventListener("click", (event) => {
     if (!(event.target instanceof HTMLAnchorElement)) return;
-    console.log(event.target);
     if (
       event.target.tagName === "A" &&
       event.target.getAttribute("target") === "_blank"
@@ -75,7 +80,8 @@ function getMessageCountFromTitle(title: string) {
 }
 
 function registerTitleElementObserver() {
-  new MutationObserver(function () {
+  titleObserver?.disconnect();
+  titleObserver = new MutationObserver(function () {
     const title = titleElement.textContent;
     if (!title) return;
 
@@ -90,7 +96,8 @@ function registerTitleElementObserver() {
     } catch (error) {
       console.error(error);
     }
-  }).observe(titleElement, {
+  });
+  titleObserver.observe(titleElement, {
     subtree: true,
     childList: true,
     characterData: true,
@@ -98,12 +105,12 @@ function registerTitleElementObserver() {
 }
 
 function setThemeCSS(css: string) {
-  const existingStyle = document.getElementById("altus-style");
+  const existingStyle = document.getElementById("eck-style");
   if (existingStyle) {
     existingStyle.innerHTML = css;
   } else {
     const styleElement = document.createElement("style");
-    styleElement.id = "altus-style";
+    styleElement.id = "eck-style";
     styleElement.innerHTML = css;
     document.head.appendChild(styleElement);
   }
@@ -113,7 +120,6 @@ function setThemeColors(colors: NonNullable<Theme["colors"]>) {
   document.body.classList.add("custom");
 
   const bgLuminance = getLuminance(colors.bg);
-  console.log(bgLuminance);
 
   let colorMixColor = "white";
   let colorMixColorOpposite = "black";
