@@ -128,15 +128,17 @@ const TabComponent: Component<TabComponentProps> = (props) => {
         class="flex items-center gap-1"
       >
         {props.tab.name}
-        {props.tab.tags && props.tab.tags.length > 0 && (
+        <Show when={props.tab.tags && props.tab.tags.length > 0}>
           <span class="flex gap-0.5">
-            {props.tab.tags.slice(0, 3).map((tag) => (
-              <span class="bg-emerald-700/70 text-white text-[0.6rem] leading-none px-1 py-0.5 rounded">
-                {tag}
-              </span>
-            ))}
+            <For each={(props.tab.tags ?? []).slice(0, 3)}>
+              {(tag) => (
+                <span class="bg-emerald-700/70 text-white text-[0.6rem] leading-none px-1 py-0.5 rounded">
+                  {tag}
+                </span>
+              )}
+            </For>
           </span>
-        )}
+        </Show>
       </span>
       <button
         class="flex items-center justify-center ml-0.5 w-6 h-6 hover:bg-zinc-800/50 rounded group-data-[selected]:hover:bg-zinc-800/50"
@@ -305,12 +307,12 @@ const TabsList: Component = () => {
           class="tabs-list flex overflow-x-auto"
           onDragEnter={(event) => {
             if (!event.dataTransfer) return;
-            const isDraggingTab = !!draggedTab;
+            const isDraggingTab = !!draggedTab();
             if (isDraggingTab) event.preventDefault();
           }}
           onDragOver={(event) => {
             if (!event.dataTransfer) return;
-            const isDraggingTab = !!draggedTab;
+            const isDraggingTab = !!draggedTab();
             if (isDraggingTab) event.preventDefault();
           }}
           onDrop={(event) => {

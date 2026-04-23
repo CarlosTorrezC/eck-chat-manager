@@ -206,11 +206,13 @@ if (!singleInstanceLock) {
   });
 
   app.on("ready", () => {
-    const userAgentFallback = app.userAgentFallback;
-    app.userAgentFallback = userAgentFallback.replace(
-      /(ECK Chat Manager|Altus|Electron)\/[^\s]+\s/g,
-      ""
-    );
+    // Strip app name and Electron tokens from the UA so WhatsApp Web
+    // treats the embedded browser as pure Chrome. Electron uses app.getName()
+    // (the package.json "name" field) in the UA, not productName.
+    const appNameEscaped = app.getName().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    app.userAgentFallback = app.userAgentFallback
+      .replace(new RegExp(`\\s${appNameEscaped}\\/\\S+`, "gi"), "")
+      .replace(/\s(ECK Chat Manager|Altus|Electron)\/\S+/gi, "");
 
     if (app.isPackaged) app.setAsDefaultProtocolClient("whatsapp");
     if (process.argv.some((arg) => arg.includes("whatsapp"))) {
