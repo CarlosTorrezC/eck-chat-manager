@@ -6,7 +6,7 @@ import {
   onCleanup,
   onMount,
 } from "solid-js";
-import { stableTabArray, tabStore } from "./stores/tabs/solid";
+import { getActiveWebviewElement, stableTabArray, tabStore } from "./stores/tabs/solid";
 import WebView from "./components/WebView";
 import TabsList from "./components/TabsList";
 import SettingsDialog from "./components/SettingsDialog";
@@ -26,6 +26,34 @@ const App: Component = () => {
   const [isDashboardOpen, setIsDashboardOpen] = createSignal(false);
   const [menu, { refetch: refetchAppMenu }] = createResource(window.getAppMenu);
 
+  async function exportActiveTabToPdf(): Promise<void> {
+    const webview = getActiveWebviewElement();
+    if (!webview) return;
+    const activeTab = tabStore.tabs.find(
+      (t) => t.id === tabStore.selectedTabId
+    );
+    const safeName =
+      (activeTab?.name ?? "conversacion")
+        .replace(/[^a-z0-9_\-\s]/gi, "")
+        .trim()
+        .replace(/\s+/g, "_") || "conversacion";
+    const date = new Date().toISOString().slice(0, 10);
+    try {
+      const data = (await webview.printToPDF({
+        landscape: false,
+        printBackground: true,
+        pageSize: "A4",
+        margins: { marginType: "default" },
+      })) as unknown as Uint8Array;
+      await window.savePdf({
+        defaultName: `${safeName}_${date}.pdf`,
+        data,
+      });
+    } catch (error) {
+      console.error("Export PDF failed", error);
+    }
+  }
+
   const handlers = new Set<() => void>();
   onCleanup(() => {
     for (const cleanup of handlers) {
@@ -44,6 +72,9 @@ const App: Component = () => {
       } else if (key === "d") {
         event.preventDefault();
         setIsDashboardOpen((prev) => !prev);
+      } else if (key === "e") {
+        event.preventDefault();
+        void exportActiveTabToPdf();
       }
     };
     const onKeyDownEscape = (event: KeyboardEvent) => {

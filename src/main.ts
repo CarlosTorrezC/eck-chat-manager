@@ -627,6 +627,25 @@ function addIPCHandlers(mainWindow: BrowserWindow) {
     }
   );
 
+  ipcMain.handle(
+    "save-pdf",
+    async (
+      _event,
+      payload: { defaultName: string; data: number[] }
+    ): Promise<{ saved: boolean; path?: string }> => {
+      const result = await dialog.showSaveDialog(mainWindow, {
+        title: "Guardar conversacion como PDF",
+        defaultPath: payload.defaultName,
+        filters: [{ name: "PDF", extensions: ["pdf"] }],
+      });
+      if (result.canceled || !result.filePath) {
+        return { saved: false };
+      }
+      await fs.promises.writeFile(result.filePath, Buffer.from(payload.data));
+      return { saved: true, path: result.filePath };
+    }
+  );
+
   ipcMain.handle("get-app-menu", () => {
     const menu = Menu.getApplicationMenu();
     if (!menu) return;

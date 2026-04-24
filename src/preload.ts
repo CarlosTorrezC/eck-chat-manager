@@ -149,6 +149,17 @@ contextBridge.exposeInMainWorld("clickMenuItem", (id: string) =>
 
 contextBridge.exposeInMainWorld("platform", process.platform);
 
+contextBridge.exposeInMainWorld("savePdf", async (opts: {
+  defaultName: string;
+  data: Uint8Array;
+}) => {
+  return await ipcRenderer.invoke("save-pdf", {
+    defaultName: opts.defaultName,
+    // Uint8Array passes via structured clone; convert to Buffer-ready Array on main
+    data: Array.from(opts.data),
+  });
+});
+
 contextBridge.exposeInMainWorld("windowActions", {
   minimize: () => ipcRenderer.invoke("minimize-window"),
   maximize: () => ipcRenderer.invoke("maximize-window"),

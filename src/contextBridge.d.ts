@@ -42,5 +42,9 @@ declare global {
     };
     clickMenuItem: (id: string) => Promise<void>;
     platform: NodeJS.Platform;
+    savePdf: (opts: {
+      defaultName: string;
+      data: Uint8Array;
+    }) => Promise<{ saved: boolean; path?: string }>;
   }
 }
