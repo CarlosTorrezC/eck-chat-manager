@@ -29,7 +29,7 @@ export const getDefaultTab = (): Tab => ({
   tags: [],
   note: "",
   config: {
-    theme: "dark",
+    theme: "default",
     notifications: true,
     media: true,
     sound: true,

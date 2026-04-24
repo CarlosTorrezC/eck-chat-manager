@@ -1,7 +1,7 @@
 {
   "name": "eck-chat-manager",
   "productName": "ECK Chat Manager",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Gestor multi-cuenta de WhatsApp Web para ECK Moda",
   "main": ".vite/build/main.js",
   "build": {
