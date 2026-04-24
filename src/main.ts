@@ -30,15 +30,84 @@ import {
 import AutoLaunch from "auto-launch";
 import electronDl from "electron-dl";
 import contextMenu from "electron-context-menu";
-import { updateElectronApp, UpdateSourceType } from "update-electron-app";
+
+/**
+ * Manual update check via GitHub Releases API.
+ * We can't use update-electron-app (Squirrel only) nor electron-updater
+ * (electron-builder format) because our installer is plain NSIS from forge.
+ * So we poll GitHub, compare semver, and prompt the user to download.
+ */
+const UPDATE_REPO = "CarlosTorrezC/eck-chat-manager-releases";
+const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+
+function compareSemver(a: string, b: string): number {
+  const pa = a.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+  const pb = b.replace(/^v/, "").split(".").map((n) => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const da = pa[i] ?? 0;
+    const db = pb[i] ?? 0;
+    if (da !== db) return da - db;
+  }
+  return 0;
+}
+
+let lastNotifiedVersion: string | null = null;
+
+async function checkForUpdates(silent = false): Promise<void> {
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${UPDATE_REPO}/releases/latest`,
+      { headers: { Accept: "application/vnd.github+json" } }
+    );
+    if (!res.ok) return;
+    const data = (await res.json()) as {
+      tag_name: string;
+      html_url: string;
+      assets: Array<{ name: string; browser_download_url: string }>;
+    };
+    const latestTag = data.tag_name;
+    if (!latestTag) return;
+    const currentVersion = app.getVersion();
+    if (compareSemver(latestTag, currentVersion) <= 0) {
+      if (!silent) {
+        dialog.showMessageBox({
+          type: "info",
+          title: "ECK Chat Manager",
+          message: "Estas usando la ultima version.",
+          detail: `Version actual: v${currentVersion}`,
+        });
+      }
+      return;
+    }
+    if (lastNotifiedVersion === latestTag) return;
+    lastNotifiedVersion = latestTag;
+
+    const exeAsset = data.assets.find((a) => a.name.endsWith(".exe"));
+    const downloadUrl = exeAsset?.browser_download_url ?? data.html_url;
+
+    const choice = await dialog.showMessageBox({
+      type: "info",
+      title: "Actualizacion disponible",
+      message: `Nueva version disponible: ${latestTag}`,
+      detail: `Tu version actual es v${currentVersion}.\n\nDescarga e instala la nueva version. Al ejecutar el instalador se actualizara sobre la instalacion existente manteniendo las sesiones de WhatsApp y la configuracion.`,
+      buttons: ["Descargar ahora", "Mas tarde"],
+      defaultId: 0,
+      cancelId: 1,
+    });
+    if (choice.response === 0) {
+      shell.openExternal(downloadUrl);
+    }
+  } catch (error) {
+    console.error("Update check failed", error);
+  }
+}
 
 if (app.isPackaged) {
-  updateElectronApp({
-    updateSource: {
-      type: UpdateSourceType.ElectronPublicUpdateService,
-      repo: "CarlosTorrezC/eck-chat-manager-releases",
-    },
-    updateInterval: "1 hour",
+  app.whenReady().then(() => {
+    // Initial check 30s after launch (give network time to connect)
+    setTimeout(() => checkForUpdates(true), 30 * 1000);
+    // Recurring check
+    setInterval(() => checkForUpdates(true), UPDATE_CHECK_INTERVAL_MS);
   });
 }
 
@@ -913,20 +982,8 @@ function getLocalizedMainMenu() {
           label: electronI18N.t("Check For &Updates"),
           accelerator: "CmdOrCtrl+Shift+U",
           click() {
-            dialog
-              .showMessageBox({
-                type: "question",
-                message: "Check for Updates?",
-                detail: `Current version: v${app.getVersion()}`,
-                buttons: ["Yes", "No"],
-              })
-              .then((res) => {
-                const buttonClicked = res.response;
-                if (buttonClicked === 0) {
-                  // checkUpdates().catch((err) => console.error(err));
-                }
-              })
-              .catch((err) => console.error(err));
+            lastNotifiedVersion = null;
+            checkForUpdates(false).catch((err) => console.error(err));
           },
           id: "check-for-updates",
         },
