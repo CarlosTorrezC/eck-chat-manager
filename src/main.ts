@@ -340,6 +340,40 @@ if (!singleInstanceLock) {
 
   app.on("web-contents-created", (_, webContents) => {
     if (webContents.getType() === "webview") {
+      // Restrict webview navigation to WhatsApp-related domains only.
+      const ALLOWED_HOSTS = new Set([
+        "web.whatsapp.com",
+        "www.whatsapp.com",
+        "whatsapp.com",
+        "wa.me",
+        "static.whatsapp.net",
+        "static.whatsapp.com",
+        "media.whatsapp.net",
+      ]);
+      const isAllowed = (urlString: string): boolean => {
+        try {
+          const u = new URL(urlString);
+          if (u.protocol !== "https:" && u.protocol !== "http:") return true;
+          // Accept any *.whatsapp.com / *.whatsapp.net host
+          if (u.hostname.endsWith(".whatsapp.com")) return true;
+          if (u.hostname.endsWith(".whatsapp.net")) return true;
+          return ALLOWED_HOSTS.has(u.hostname);
+        } catch {
+          return false;
+        }
+      };
+      webContents.on("will-navigate", (event, url) => {
+        if (!isAllowed(url)) {
+          event.preventDefault();
+          shell.openExternal(url);
+        }
+      });
+      webContents.setWindowOpenHandler(({ url }) => {
+        if (isAllowed(url)) return { action: "allow" };
+        shell.openExternal(url);
+        return { action: "deny" };
+      });
+
       contextMenu({
         window: {
           webContents: webContents,

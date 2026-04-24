@@ -1,4 +1,11 @@
-import { For, Show, createSignal, type Accessor } from "solid-js";
+import {
+  For,
+  Show,
+  createEffect,
+  createSignal,
+  onCleanup,
+  type Accessor,
+} from "solid-js";
 import { stableTabArray, setTabActive } from "../stores/tabs/solid";
 import { WebviewTag } from "electron";
 
@@ -60,6 +67,24 @@ const GlobalSearchBar = (props: {
   const [query, setQuery] = createSignal("");
   const [results, setResults] = createSignal<Results>(new Map());
   const [loading, setLoading] = createSignal(false);
+
+  // Debounce: auto-search 400ms after the user stops typing.
+  let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  createEffect(() => {
+    const q = query();
+    if (!props.isOpen()) return;
+    if (debounceTimer) clearTimeout(debounceTimer);
+    if (!q.trim()) {
+      setResults(new Map());
+      return;
+    }
+    debounceTimer = setTimeout(() => {
+      void runSearch();
+    }, 400);
+  });
+  onCleanup(() => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+  });
 
   const runSearch = async () => {
     const q = query().trim();

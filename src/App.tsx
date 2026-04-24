@@ -56,20 +56,21 @@ const App: Component = () => {
     window.addEventListener("keydown", onKeyDownEscape);
     handlers.add(() => window.removeEventListener("keydown", onKeyDown));
     handlers.add(() => window.removeEventListener("keydown", onKeyDownEscape));
+
+    handlers.add(
+      window.electronIPCHandlers.onOpenSettings(() => {
+        setIsSettingsOpen(true);
+      })
+    );
+    handlers.add(
+      window.electronIPCHandlers.onOpenThemeManager(() => {
+        setIsThemeManagerOpen(true);
+      })
+    );
+    handlers.add(
+      window.electronIPCHandlers.onReloadCustomTitleBar(refetchAppMenu)
+    );
   });
-  handlers.add(
-    window.electronIPCHandlers.onOpenSettings(() => {
-      setIsSettingsOpen(true);
-    })
-  );
-  handlers.add(
-    window.electronIPCHandlers.onOpenThemeManager(() => {
-      setIsThemeManagerOpen(true);
-    })
-  );
-  handlers.add(
-    window.electronIPCHandlers.onReloadCustomTitleBar(refetchAppMenu)
-  );
 
   return (
     <I18NProvider>

@@ -1,6 +1,7 @@
 import {
   type Component,
   onMount,
+  onCleanup,
   createEffect,
   createMemo,
   createSignal,
@@ -69,12 +70,11 @@ const WebView: Component<{ tab: Tab }> = (props) => {
       return;
     }
 
-    webview.addEventListener("did-stop-loading", () => {
+    const onStopLoading = () => {
       setDidStopLoading(false);
       setDidStopLoading(true);
-    });
-
-    webview.addEventListener("focus", () => {
+    };
+    const onFocus = () => {
       const anyOpenTitlebarMenu = document.querySelector(
         "[data-custom-titlebar-menu] > [data-expanded]"
       );
@@ -86,6 +86,14 @@ const WebView: Component<{ tab: Tab }> = (props) => {
           cancelable: true,
         })
       );
+    };
+
+    webview.addEventListener("did-stop-loading", onStopLoading);
+    webview.addEventListener("focus", onFocus);
+
+    onCleanup(() => {
+      webview.removeEventListener("did-stop-loading", onStopLoading);
+      webview.removeEventListener("focus", onFocus);
     });
   });
 
