@@ -149,6 +149,11 @@ contextBridge.exposeInMainWorld("clickMenuItem", (id: string) =>
 
 contextBridge.exposeInMainWorld("platform", process.platform);
 
+contextBridge.exposeInMainWorld(
+  "clearTabCache",
+  (partition: string) => ipcRenderer.invoke("clear-partition-cache", partition)
+);
+
 contextBridge.exposeInMainWorld("savePdf", async (opts: {
   defaultName: string;
   data: Uint8Array;

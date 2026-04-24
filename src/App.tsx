@@ -1,12 +1,14 @@
 import {
   For,
   type Component,
+  createEffect,
   createSignal,
   createResource,
   onCleanup,
   onMount,
 } from "solid-js";
 import { getActiveWebviewElement, stableTabArray, tabStore } from "./stores/tabs/solid";
+import { recordActivity } from "./stores/activityLog";
 import WebView from "./components/WebView";
 import TabsList from "./components/TabsList";
 import SettingsDialog from "./components/SettingsDialog";
@@ -17,6 +19,8 @@ import { I18NProvider } from "./i18n/solid";
 import ThemeManagerDialog from "./components/ThemeManagerDialog";
 import GlobalSearchBar from "./components/GlobalSearchBar";
 import AdminDashboard from "./components/AdminDashboard";
+import ShortcutsDialog from "./components/ShortcutsDialog";
+import QuickActionsBar from "./components/QuickActionsBar";
 import "./stores/messageCounts";
 
 const App: Component = () => {
@@ -24,7 +28,22 @@ const App: Component = () => {
   const [isThemeManagerOpen, setIsThemeManagerOpen] = createSignal(false);
   const [isGlobalSearchOpen, setIsGlobalSearchOpen] = createSignal(false);
   const [isDashboardOpen, setIsDashboardOpen] = createSignal(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = createSignal(false);
   const [menu, { refetch: refetchAppMenu }] = createResource(window.getAppMenu);
+
+  // Record tab-open activity whenever the admin switches tabs.
+  createEffect(() => {
+    const selId = tabStore.selectedTabId;
+    if (!selId) return;
+    const tab = tabStore.tabs.find((t) => t.id === selId);
+    if (!tab) return;
+    recordActivity({
+      timestamp: Date.now(),
+      tabId: selId,
+      tabName: tab.name,
+      action: "open",
+    });
+  });
 
   async function exportActiveTabToPdf(): Promise<void> {
     const webview = getActiveWebviewElement();
@@ -77,15 +96,26 @@ const App: Component = () => {
         void exportActiveTabToPdf();
       }
     };
+    const onShortcutsKey = (event: KeyboardEvent) => {
+      // Ctrl+? / Ctrl+Shift+/
+      const mod = event.ctrlKey || event.metaKey;
+      if (mod && (event.key === "?" || (event.shiftKey && event.key === "/"))) {
+        event.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
+      }
+    };
     const onKeyDownEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         if (isDashboardOpen()) setIsDashboardOpen(false);
         if (isGlobalSearchOpen()) setIsGlobalSearchOpen(false);
+        if (isShortcutsOpen()) setIsShortcutsOpen(false);
       }
     };
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keydown", onShortcutsKey);
     window.addEventListener("keydown", onKeyDownEscape);
     handlers.add(() => window.removeEventListener("keydown", onKeyDown));
+    handlers.add(() => window.removeEventListener("keydown", onShortcutsKey));
     handlers.add(() => window.removeEventListener("keydown", onKeyDownEscape));
 
     handlers.add(
@@ -145,6 +175,16 @@ const App: Component = () => {
         <AdminDashboard
           isOpen={isDashboardOpen}
           close={() => setIsDashboardOpen(false)}
+        />
+        <ShortcutsDialog
+          isOpen={isShortcutsOpen}
+          close={() => setIsShortcutsOpen(false)}
+        />
+        <QuickActionsBar
+          onOpenDashboard={() => setIsDashboardOpen((p) => !p)}
+          onOpenSearch={() => setIsGlobalSearchOpen((p) => !p)}
+          onExportPdf={() => void exportActiveTabToPdf()}
+          onOpenShortcuts={() => setIsShortcutsOpen((p) => !p)}
         />
       </div>
     </I18NProvider>

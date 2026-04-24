@@ -9,6 +9,7 @@ import {
 } from "solid-js";
 import { stableTabArray, setTabActive, tabStore } from "../stores/tabs/solid";
 import { messageCounts, unreadSince } from "../stores/messageCounts";
+import { activityLog, clearActivityLog } from "../stores/activityLog";
 
 const STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -184,6 +185,34 @@ const AdminDashboard = (props: {
           </Show>
         </div>
 
+        <Show when={activityLog().length > 0}>
+          <div class="border-t border-slate-700 px-4 py-2">
+            <div class="flex items-center justify-between mb-1">
+              <div class="text-[0.65rem] uppercase tracking-wider text-slate-500 font-semibold">
+                Actividad reciente
+              </div>
+              <button
+                class="text-[0.65rem] text-slate-500 hover:text-slate-300"
+                onClick={() => clearActivityLog()}
+                title="Borrar historial"
+              >
+                Borrar
+              </button>
+            </div>
+            <div class="max-h-28 overflow-auto">
+              <For each={activityLog().slice(0, 8)}>
+                {(entry) => (
+                  <div class="flex items-center justify-between py-0.5 text-[0.7rem] text-slate-400">
+                    <span class="truncate">{entry.tabName}</span>
+                    <span class="ml-2 shrink-0 text-slate-600">
+                      {formatAge(now() - entry.timestamp)}
+                    </span>
+                  </div>
+                )}
+              </For>
+            </div>
+          </div>
+        </Show>
         <div class="border-t border-slate-700 px-4 py-2 text-[11px] text-slate-500">
           Ctrl+Shift+D para abrir/cerrar · Esc para salir
         </div>

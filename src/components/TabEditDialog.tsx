@@ -272,6 +272,33 @@ const TabEditDialog: Component<{
                 </div>
               )}
             </div>
+            <div class="py-2">
+              <button
+                type="button"
+                class="w-full rounded border border-zinc-600 bg-zinc-700/40 px-3 py-1.5 text-xs text-zinc-200 hover:bg-zinc-700"
+                onClick={async () => {
+                  const result = await window.clearTabCache(
+                    `persist:${props.tabToEdit().id}`
+                  );
+                  await window.showMessageBox({
+                    type: result.ok ? "info" : "error",
+                    title: "ECK Chat Manager",
+                    message: result.ok
+                      ? "Cache de esta cuenta limpiado."
+                      : "No se pudo limpiar el cache.",
+                    detail: result.ok
+                      ? "La sesion de WhatsApp se mantiene (no hay que escanear QR de nuevo). Si la cuenta sigue con problemas, cierra y abre la pestana."
+                      : undefined,
+                  });
+                }}
+              >
+                Limpiar cache de esta cuenta
+              </button>
+              <div class="mt-1 text-[0.65rem] leading-tight text-zinc-500">
+                Util si la cuenta carga lenta o muestra errores. No borra la
+                sesion escaneada.
+              </div>
+            </div>
           </Dialog.Description>
         </Dialog.Content>
       </div>

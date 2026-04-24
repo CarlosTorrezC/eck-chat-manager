@@ -628,6 +628,22 @@ function addIPCHandlers(mainWindow: BrowserWindow) {
   );
 
   ipcMain.handle(
+    "clear-partition-cache",
+    async (_event, partitionId: string): Promise<{ ok: boolean }> => {
+      try {
+        const s = session.fromPartition(partitionId);
+        await s.clearCache();
+        // Purposely NOT clearing cookies/storageData — doing so forces the user
+        // to re-scan the QR. This only flushes the transient HTTP cache.
+        return { ok: true };
+      } catch (error) {
+        console.error("clear-partition-cache failed", error);
+        return { ok: false };
+      }
+    }
+  );
+
+  ipcMain.handle(
     "save-pdf",
     async (
       _event,

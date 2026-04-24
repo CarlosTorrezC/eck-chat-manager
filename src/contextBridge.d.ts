@@ -46,5 +46,6 @@ declare global {
       defaultName: string;
       data: Uint8Array;
     }) => Promise<{ saved: boolean; path?: string }>;
+    clearTabCache: (partition: string) => Promise<{ ok: boolean }>;
   }
 }
